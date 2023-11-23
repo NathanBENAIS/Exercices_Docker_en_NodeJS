@@ -1,0 +1,64 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  server-pong:
+    build:
+      context: ./Server-pong
+      dockerfile: Dockerfile.pong
+    container_name: server-pong
+    ports:
+      - "4567:4567"
+    depends_on:
+      - server-registry
+      - message-broker
+      - server-gateway
+    networks:
+      - isolated_network
+
+  server-ping:
+    build:
+      context: ./Server-ping
+      dockerfile: Dockerfile.ping
+    container_name: server-ping
+    ports:
+      - "5372:5372"
+    depends_on:
+      - server-registry
+      - message-broker
+      - server-gateway
+    networks:
+      - isolated_network
+
+  server-gateway:
+    build:
+      context: ./Server-gateway
+      dockerfile: Dockerfile.gateway
+    container_name: server-gateway
+    ports:
+      - "8081:8081"
+    depends_on:
+      - message-broker
+    networks:
+      - isolated_network
+
+  message-broker:
+    image: "rabbitmq:management"
+    container_name: message-broker
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  server-registry:
+    build:
+      context: ./Server-registry
+      dockerfile: Dockerfile.registry
+    container_name: server-registry
+    ports:
+      - "8080:8080"
+    depends_on:
+      - message-broker
+
+networks:
+  isolated_network:
+    driver: bridge
